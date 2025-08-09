@@ -1,4 +1,5 @@
 const mongoose = require('mongoose'); // Importing mongoose for MongoDB interaction
+const Review = require('./review'); // Importing the reviews Schema
 const Schema = mongoose.Schema; // Getting the Schema constructor from mongoose
 
 const listingSchema = new Schema({ // Defining the schema for a listing
@@ -35,8 +36,25 @@ const listingSchema = new Schema({ // Defining the schema for a listing
         required: true
     },
     location: String,
-    country: String
+    country: String,
+    reviews: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Review"
+        }
+    ]
 });
+
+// Post middleware for 'findOneAndDelete' on the Listing model
+// This runs AFTER a Listing document is deleted
+listingSchema.post("findOneAndDelete", async (listing) => {
+    // Check if a listing was actually found and deleted
+    if (listing) {
+        // Delete all reviews whose _id is present in the 'reviews' array of the deleted listing
+        await Review.deleteMany({ _id: { $in: listing.reviews } });
+    }
+});
+
 
 
 const Listing = mongoose.model('Listing', listingSchema); // Creating a model named 'Listing' using the schema
