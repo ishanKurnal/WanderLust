@@ -42,7 +42,11 @@ const listingSchema = new Schema({ // Defining the schema for a listing
             type: Schema.Types.ObjectId,
             ref: "Review"
         }
-    ]
+    ],
+    owner: {
+        type: Schema.Types.ObjectId,
+        ref: "User"
+    }
 });
 
 // Post middleware for 'findOneAndDelete' on the Listing model
