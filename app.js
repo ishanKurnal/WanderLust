@@ -1,3 +1,8 @@
+if (process.env.NODE_ENV != "production") {
+  require("dotenv").config();
+}
+// console.log(process.env.SECRET);
+
 const express = require('express'); // Importing express framework
 const app = express(); // Creating an instance of express
 const path = require('path'); // Importing path module for handling file paths
@@ -74,11 +79,10 @@ passport.deserializeUser(User.deserializeUser());  // Tells Passport how to retr
 
 app.use((req, res, next) => {
   res.locals.success = req.flash("success"); // Store success flash messages in res.locals for templates
-  res.locals.error = req.flash("error");
-  res.locals.currUser = req.user;  // Makes the currently authenticated user available to all views (EJS templates) as 'currUser'
- 
-  // console.log(res.locals.success); // Debug: log success messages to console
-  next(); // Proceed to next middleware/route
+  res.locals.error = req.flash("error");  // Store error flash messages in res.locals for templates
+  res.locals.currUser = req.user; // Makes the currently authenticated user available to all views (EJS templates) as 'currUser'
+  res.locals.originalUrl = req.originalUrl; // Save the original URL of the request to be used in the navbar
+  next();
 });
 
 // Demo Route: Creating a User
