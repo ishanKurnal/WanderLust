@@ -58,7 +58,8 @@ const sessionOptions = {
 }
 
 app.get("/", (req, res) => {
-    res.send("Welcome to the WanderLust app!"); // Home route
+    // res.send("Welcome to the WanderLust app!"); // Home route
+    res.redirect("/listings"); // Redirect to the listings index page
 });
 
 // Register the session middleware with Express
