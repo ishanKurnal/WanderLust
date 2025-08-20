@@ -46,6 +46,19 @@ const listingSchema = new Schema({ // Defining the schema for a listing
     owner: {
         type: Schema.Types.ObjectId,
         ref: "User"
+    },
+    geometry: {
+        type: {
+            type: String, // Don't do `{ location: { type: String } }`
+            enum: ['Point'], // 'location.type' must be 'Point'
+            required: true
+        },
+        // Coordinates are stored as an array of numbers [longitude, latitude]
+        // This is the GeoJSON format for points
+        coordinates: {
+            type: [Number],
+            required: true
+        }
     }
 });
 

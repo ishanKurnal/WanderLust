@@ -1,4 +1,8 @@
+const { Query } = require("mongoose");
 const Listing = require("../models/listing.js");
+const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding"); // Importing Mapbox Geocoding service
+const mapToken = process.env.MAP_TOKEN; // Getting the Mapbox token from environment variables
+const geocodingClinet = mbxGeocoding({ accessToken: mapToken }); // Initializing the geocoder with the Mapbox token 
 
 module.exports.index = async (req, res) => {
   const allListings = await Listing.find({}); // Fetching all listings from the database
@@ -21,19 +25,31 @@ module.exports.showListing = async (req, res) => {
   res.render("listings/show.ejs", { listing }); // Rendering the show view with the specific listing
 }
 
-module.exports.createNewListing = async (req, res) => {
-    const newListing = new Listing(req.body.listing); // Creating a new Listing instance with the form data
-    newListing.owner = req.user._id; // Setting the owner of the listing to the current user who has logged in
-    // If a file is uploaded, save its path and filename
-    if (req.file) {
+module.exports.createNewListing = async (req, res, next) => {
+  let response = await geocodingClinet
+      .forwardGeocode({
+        // query: "New Delhi, India",
+        query: req.body.listing.location, // Use the location from the form data
+        limit: 1
+      })
+      .send(); // Using Mapbox Geocoding to get coordinates for the location "New Delhi, India"
+  // console.log(response.body.features[0].geometry.coordinates);
+  // res.send("Done");
+
+
+  const newListing = new Listing(req.body.listing); // Creating a new Listing instance with the form data
+  newListing.owner = req.user._id; // Setting the owner of the listing to the current user who has logged in    // If a file is uploaded, save its path and filename
+  if (req.file) {
         newListing.image = {
             url: req.file.path,     // Cloudinary URL of the uploaded image
             filename: req.file.filename // Public ID / filename in Cloudinary
         };
-    }
-    await newListing.save(); // Saving the new listing to the database
-    req.flash("success", "Created a new listing!"); // Flash success message after creation of a listing
-    res.redirect("/listings"); // Redirecting to the index route after saving the new listing
+  }
+  newListing.geometry = response.body.features[0].geometry; // Setting the geometry field with coordinates from Mapbox Geocoding response
+  let savedListing = await newListing.save(); // Saving the new listing to the database
+  console.log("Saved Listing:", savedListing); // Logging the saved listing
+  req.flash("success", "Created a new listing!"); // Flash success message after creation of a listing
+  res.redirect("/listings"); // Redirecting to the index route after saving the new listing
 }
 
 // module.exports.createNewListing = async (req, res) => {
