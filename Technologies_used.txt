@@ -1,0 +1,51 @@
+✦Here is a comprehensive list of the technologies used in your "WanderLust" project, including the ones you've mentioned and others I've identified from the codebase:
+
+  Core Backend Technologies
+
+   * Node.js: The JavaScript runtime environment that allows you to run the application on the server.
+   * Express.js: A fast and minimalist web framework for Node.js, used to build the web server and handle routing.
+   * npm (Node Package Manager): Used for managing the project's dependencies and running scripts.
+
+  Database
+
+   * MongoDB: A NoSQL, document-oriented database used to store all the application data (listings, users, reviews).
+   * MongoDB Atlas: The cloud hosting service for the MongoDB database.
+   * Mongoose: An Object Data Modeling (ODM) library for MongoDB and Node.js. It provides a schema-based solution to model your application data and simplifies interactions with the database.
+
+  Authentication & Authorization
+
+   * Passport.js: A flexible and modular authentication middleware for Node.js.
+   * passport-local: A Passport strategy for authenticating with a username and password.
+   * passport-local-mongoose: A Mongoose plugin that simplifies building username and password login with Passport.
+   * express-session: Middleware for managing user sessions.
+   * connect-mongo: A MongoDB session store for express-session, which allows you to store session data in your MongoDB database.
+
+  View Engine & Frontend
+
+   * EJS (Embedded JavaScript): A simple templating language that lets you generate HTML markup with plain JavaScript.
+   * ejs-mate: A layout and partials helper for EJS, which helps in creating reusable templates.
+   * HTML5, CSS3, JavaScript: The standard technologies for building the user interface.
+   * Bootstrap: A popular CSS framework for building responsive and mobile-first websites.
+
+  APIs & External Services
+
+   * Cloudinary: A cloud-based service for image and video management, used here for uploading and storing listing images.
+   * Mapbox: A mapping and location platform used to display maps and for geocoding addresses into geographic coordinates.
+
+  Deployment
+
+   * Render: For hosting and deploying the application.
+
+  Validation & Data Handling
+
+   * Joi: A powerful schema description language and data validator for JavaScript, used to validate the data submitted in forms.
+   * Multer: A Node.js middleware for handling multipart/form-data, which is primarily used for uploading files.
+   * multer-storage-cloudinary: A storage engine for Multer that allows you to upload files directly to Cloudinary.
+
+  Other Middleware & Utilities
+
+   * method-override: Middleware that lets you use HTTP verbs such as PUT or DELETE in places where the client doesn't support it (like in HTML forms).
+   * connect-flash: Middleware for flashing messages, which is used to display success or error messages to the user after certain actions (e.g., after creating a listing or logging in).
+   * dotenv: A zero-dependency module that loads environment variables from a .env file into process.env.
+
+  I hope this detailed list is helpful for your understanding of the project's technology stack.
