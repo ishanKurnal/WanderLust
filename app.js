@@ -61,7 +61,7 @@ store.on("error", (e) => {
 // Session configuration options
 const sessionOptions = {
   store,                // Use the MongoDB session store created above  
-  secret: process.env.SECRET,, // Secret key to sign the session ID cookie (must be kept private in production)
+  secret: process.env.SECRET, // Secret key to sign the session ID cookie (must be kept private in production)
   resave: false,               // Prevents resaving a session if it wasn't modified during the request
   saveUninitialized: true,     // Forces uninitialized sessions (new but not modified) to be saved to the store
   
