@@ -11,6 +11,7 @@ const mongoose = require('mongoose'); // Importing mongoose for MongoDB interact
 const ejsMate = require('ejs-mate'); // Importing ejs-mate for using EJS as the view engine with layout support
 const ExpressError = require("./utils/ExpressError.js"); // Importing ExpressError for custom error handling
 const session = require("express-session"); // Import the express-session middleware to manage sessions
+const MongoStore = require('connect-mongo'); // Import connect-mongo to store session data in MongoDB
 const flash = require("connect-flash"); // Import connect-flash for flash messaging
 const passport = require("passport"); // Import Passport for authentication handling
 const LocalStrategy = require("passport-local"); // Import local strategy for username/password authentication
@@ -20,7 +21,8 @@ const listingsRouter = require("./routes/listing.js"); // Importing the listing 
 const reviewsRouter = require("./routes/review.js") // Importing the review routes
 const userRouter = require("./routes/user.js"); // Importing the user routes for login/signUp page
 
-const MONGO_URL = 'mongodb://127.0.0.1:27017/wanderlust'; // MongoDB connection URL
+// const MONGO_URL = 'mongodb://127.0.0.1:27017/wanderlust'; // MongoDB connection URL
+const dbURL = process.env.ATLASDB_URL;
 
 main()
   .then((res) => {
@@ -29,7 +31,7 @@ main()
   .catch(err => console.log(err));
 
 async function main() {
-  await mongoose.connect(MONGO_URL); // Connecting to MongoDB database named 'wanderlust'
+  await mongoose.connect(dbURL); // Connecting to MongoDB database named 'wanderlust'
 
   // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/WanderLust');` if your database has auth enabled
 }
@@ -43,9 +45,23 @@ app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-enco
 app.use(methodOverride("_method")); // Middleware to support PUT and DELETE methods in forms
 app.use(express.static(path.join(__dirname, "public"))); // Serving static files from the 'public' directory
 
+// Creating a MongoDB session store
+const store = MongoStore.create({
+  mongoUrl: dbURL, // MongoDB connection URL
+  crypto: {
+    secret: process.env.SECRET, // Secret key for encrypting session data (should be kept private in production)
+  },
+  touchAfter: 24 * 60 * 60 // Time period in seconds to update session only if it was modified (here: 24 hours)
+});
+
+store.on("error", (e) => {
+  console.log("SESSION STORE ERROR!", e); // Logging any errors with the session store
+});
+
 // Session configuration options
-const sessionOptions = {  
-  secret: "mysupersecretcode", // Secret key to sign the session ID cookie (must be kept private in production)
+const sessionOptions = {
+  store,                // Use the MongoDB session store created above  
+  secret: process.env.SECRET,, // Secret key to sign the session ID cookie (must be kept private in production)
   resave: false,               // Prevents resaving a session if it wasn't modified during the request
   saveUninitialized: true,     // Forces uninitialized sessions (new but not modified) to be saved to the store
   

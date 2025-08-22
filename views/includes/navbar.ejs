@@ -1,13 +1,77 @@
+<style>
+  .search-btn {
+    background-color: #fe424d;
+    color: #fff;
+    border-radius: 25px;
+    padding: 0 1rem 0 1rem;
+  }
+  .search-btn:hover {
+    background-color: #fe424d;
+    color: #fff;
+  }
+  .search-btn i {
+    display: inline;
+    margin-right: 0.5rem;
+  }
+  .search-inp {
+    border-radius: 25px;
+    padding: 0.5rem 3rem 0.5rem 3rem;
+    font-size: 1rem
+  }
+</style>
+
+
+
 <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="/listings"><i class="fa-regular fa-compass"></i></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="collapse navbar-collapse bg-white" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-link" href="/listings">Explore</a>
       </div>
+      
+      <div class="navbar-nav ms-auto">
+        <form class="d-flex" role="search" action="/listings/search" method="GET">
+          <div class="dropdown d-grid me-2">
+            <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="navbar-category-button" style="width: auto;">
+              All
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#" data-value="all">All</a></li>
+              <li><a class="dropdown-item" href="#" data-value="location">Location</a></li>
+              <li><a class="dropdown-item" href="#" data-value="country">Country</a></li>
+              <li><a class="dropdown-item" href="#" data-value="title">Title</a></li>
+              <li><a class="dropdown-item" href="#" data-value="description">Description</a></li>
+            </ul>
+          </div>
+          <input type="hidden" id="navbar-category-input" name="category" value="all">
+          <input class="form-control me-2 search-inp" type="search" placeholder="Search destinations" name="q"/>
+          <button class="btn search-btn" type="submit"><i class="fa-solid fa-magnifying-glass"></i>Search</button>
+        </form>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const categoryButton = document.getElementById('navbar-category-button');
+    const categoryInput = document.getElementById('navbar-category-input');
+    const dropdownItems = document.querySelectorAll('#navbar-category-button + .dropdown-menu .dropdown-item');
+
+    dropdownItems.forEach(item => {
+      item.addEventListener('click', function (e) {
+        e.preventDefault();
+        const selectedValue = this.getAttribute('data-value');
+        const selectedText = this.textContent;
+
+        categoryButton.textContent = selectedText;
+        categoryInput.value = selectedValue;
+      });
+    });
+  });
+</script>
+      </div>
+
       <div class="navbar-nav ms-auto">
         <a class="nav-link" href="/listings/new">List your home</a>
         <% if (!currUser) { %>

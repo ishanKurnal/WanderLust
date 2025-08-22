@@ -23,6 +23,9 @@ router
 // New Route to display the form for creating a new listing
 router.get("/new", isLoggedIn, ListingController.renderNewForm);
 
+// Search Route
+router.get("/search", wrapAsync(ListingController.searchListings));
+
 router
   .route("/:id")
   // Show Route to display a specific listing

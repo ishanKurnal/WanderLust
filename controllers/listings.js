@@ -5,8 +5,14 @@ const mapToken = process.env.MAP_TOKEN; // Getting the Mapbox token from environ
 const geocodingClinet = mbxGeocoding({ accessToken: mapToken }); // Initializing the geocoder with the Mapbox token 
 
 module.exports.index = async (req, res) => {
-  const allListings = await Listing.find({}); // Fetching all listings from the database
-  res.render("listings/index.ejs", { allListings }); // Rendering the index view with all listings
+  const { category } = req.query;
+  if (category) {
+    const allListings = await Listing.find({ category });
+    res.render("listings/index.ejs", { allListings });
+  } else {
+    const allListings = await Listing.find({}); // Fetching all listings from the database
+    res.render("listings/index.ejs", { allListings }); // Rendering the index view with all listings
+  }
 }
 
 module.exports.renderNewForm =  (req, res) => {
@@ -66,31 +72,43 @@ module.exports.createNewListing = async (req, res, next) => {
 // }
 
 module.exports.renderEditForm = async (req, res) => {
-    let { id } = req.params; // Extracting the listing ID from the request parameters
-    const listing = await Listing.findById(id); // Finding the listing by ID in the database
-    if (!listing) { // If the listing is not found
-        req.flash("error", "Listing you requested for doesn't exist!"); // Flash error message
-        return res.redirect("/listings"); // Redirect to the listings index page
+    let { id } = req.params;
+    const listing = await Listing.findById(id);
+    if (!listing) {
+        req.flash("error", "Listing you requested for doesn't exist!");
+        return res.redirect("/listings");
     }
-    let originalImageUrl = listing.image.url; // Getting the original image URL
-    // Modifying the image URL to display a resized version (250px width) for preview in the edit form
-    originalImageUrl = originalImageUrl.replace("/upload", "/upload/w_250");
-    // Rendering the edit form page with the listing data and the resized preview image
+    let originalImageUrl = listing.image.url;
+    if (originalImageUrl.includes("/upload")) {
+        originalImageUrl = originalImageUrl.replace("/upload", "/upload/w_250");
+    } else if (originalImageUrl.includes("unsplash")) {
+        originalImageUrl = originalImageUrl.replace(/w=\d+/, "w=250");
+    }
     res.render("listings/edit.ejs", { listing, originalImageUrl });
 };
 
 
 module.exports.updateListing = async (req, res) => {
     let { id } = req.params; // Extracting the listing ID from the route parameters
-    // Finding the listing by ID and updating it with the new form data
     let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+
+    if (req.body.listing.location) {
+        let response = await geocodingClinet
+            .forwardGeocode({
+                query: req.body.listing.location,
+                limit: 1
+            })
+            .send();
+        listing.geometry = response.body.features[0].geometry;
+    }
+
     // If a new image is uploaded, update the image URL and filename
     if (req.file) {
         let url = req.file.path; // Cloudinary URL of the uploaded image
         let filename = req.file.filename; // Public ID / filename in Cloudinary
         listing.image = { url, filename }; // Updating the image field of the listing
-        await listing.save(); // Saving the updated listing with the new image
     }
+    await listing.save(); // Saving the updated listing with the new image and geometry
     req.flash("success", "Listing updated successfully!"); // Flash success message after updating the listing
     res.redirect(`/listings/${id}`); // Redirecting to the updated listing's show page
 };
@@ -103,3 +121,28 @@ module.exports.destroyListing = async (req, res) => {
   req.flash("success", "Listing deleted successfully!"); // Flash success message after deletion of a listing
   res.redirect("/listings"); // Redirecting to the index route after deletion
 }
+
+module.exports.searchListings = async (req, res) => {
+  let { category, q } = req.query;
+  let query = {};
+
+  if (q) {
+    const regex = new RegExp(q, "i");
+
+    if (category && category !== "all") {
+      query[category] = regex;
+    } else {
+      query = {
+        $or: [
+          { title: regex },
+          { description: regex },
+          { location: regex },
+          { country: regex },
+        ],
+      };
+    }
+  }
+
+  let listings = await Listing.find(query);
+  res.render("listings/index.ejs", { allListings: listings });
+};
